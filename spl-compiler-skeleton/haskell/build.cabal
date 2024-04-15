@@ -1,0 +1,66 @@
+cabal-version:      3.0
+name:               spl
+version:            0.0.1
+author:             Björn Lötters, Oskar Arlt
+maintainer:         bjoern.loetters@mni.thm.de, oskar.arlt@mni.thm.de
+category:           Language
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall -Wno-name-shadowing -Wno-unused-do-bind
+
+    default-extensions: GADTs, 
+                        OverloadedStrings,
+                        TupleSections,
+                        LambdaCase
+
+executable spl
+    import:             warnings
+    main-is:            Main.hs
+    
+    other-modules:      Absyn.Expression,
+                        Absyn.Position,
+                        Absyn.Program,
+                        Absyn.BinaryOperator,
+                        Absyn.UnaryOperator,
+                        Absyn.Node,
+                        Absyn.Statement,
+                        Absyn.Declaration,
+                        Absyn.TypeExpression,
+                        Table.SymbolTable,
+                        Utility.SplError,
+                        Token,
+                        Scanner,
+                        Parser,
+                        Types.Type,
+                        Types.HasType,
+                        TableInitializer,
+                        StackLayout,
+                        VarAllocator,
+                        TableBuilder,
+                        ProcedureBodyChecker,
+                        CodePrinter,
+                        Register,
+                        CodeGenerator,
+                        CommandLineOptions,
+                        Utility.AsciiTable
+                        
+    build-depends:      base,
+                        containers >= 0.6.7,
+                        array >= 0.5.4.0
+
+    build-tool-depends: alex:alex,
+                        happy:happy
+
+    hs-source-dirs:     src, 
+                        src/phases/_01_scanner, 
+                        src/phases/_02_03_parser, 
+                        src/phases/_04a_tablebuild, 
+                        src/phases/_04b_semant, 
+                        src/phases/_05_varalloc, 
+                        src/phases/_06_codegen,
+                        src/Types
+    
+
+    default-language:   GHC2021
+
