@@ -35,4 +35,41 @@ import java_cup.runtime.*;
 
 // TODO (assignment 1): The regular expressions for all tokens need to be defined here.
 
+if { return symbol(Sym.IF);}
+else { return symbol(Sym.ELSE);}
+array { return symbol(Sym.ARRAY);}
+of { return symbol(Sym.OF);}
+proc { return symbol(Sym.PROC);}
+ref { return symbol(Sym.REF);}
+type { return symbol(Sym.TYPE);}
+while { return symbol(Sym.WHILE);}
+var { return symbol(Sym.VAR);}
+[a-zA-Z_][a-zA-Z0-9_]* { return symbol(Sym.IDENT);}
+[1-9][0-9]* { return symbol(Sym.INTLIT);}
+0X[0-9a-fA-F]+ { return symbol(Sym.INTLIT, yytext());}
+\( { return symbol(Sym.LPAREN);}
+\) { return symbol(Sym.RPAREN);}
+\{ { return symbol(Sym.LCURL);}
+\} { return symbol(Sym.RCURL);}
+\[ { return symbol(Sym.LBRACK);}
+\] { return symbol(Sym.RBRACK);}
+\+ { return symbol(Sym.PLUS);}
+\- { return symbol(Sym.MINUS);}
+\* { return symbol(Sym.STAR);}
+\/ { return symbol(Sym.SLASH);}
+"//".* {}
+\s {}
+\= { return symbol(Sym.EQ);}
+\# { return symbol(Sym.NE);}
+\< { return symbol(Sym.LT);}
+\> { return symbol(Sym.GT);}
+\<= { return symbol(Sym.NE);}
+\>= { return symbol(Sym.GE);}
+\, { return symbol(Sym.COLON);}
+\; { return symbol(Sym.SEMIC);}
+\: { return symbol(Sym.COLON);}
+\:= { return symbol(Sym.ASGN);}
+\# { return symbol(Sym.NE);}
+'\\n' { return symbol(Sym.INTLIT, (int)yytext().charAt(2)); }
+
 [^]		{throw SplError.LexicalError(new Position(yyline + 1, yycolumn + 1), yytext().charAt(0));}
