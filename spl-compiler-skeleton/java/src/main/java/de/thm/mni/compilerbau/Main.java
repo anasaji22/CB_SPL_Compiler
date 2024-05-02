@@ -38,7 +38,6 @@ class Main {
         System.out.printf("TOKEN = %s", Sym.terminalNames[token.sym]);   // Name of token class
 
         if (token.sym != Sym.EOF) System.out.printf(" in line %d, column %d", token.left, token.right); // Line and Column
-
         if (token.value != null) {
             System.out.print(", value = ");
             if (token.value instanceof String || token.value instanceof Identifier) System.out.printf("\"%s\"", token.value);
