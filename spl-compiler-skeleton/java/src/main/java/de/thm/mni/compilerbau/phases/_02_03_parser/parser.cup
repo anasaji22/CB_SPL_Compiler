@@ -67,7 +67,7 @@ non terminal IfStatement ifStat;
 non terminal NamedTypeExpression namedTypeExpr;
 non terminal NamedVariable namedVar;
 non terminal ArrayAccess arrayAccess;
-non terminal ArrayTypeExpression arrayTypeExpr;
+non terminal ArrayTypeExpression typeExpr;
 non terminal AssignStatement assignStat;
 
 //non terminal BinaryExpression binaryExprPlus;
@@ -81,8 +81,10 @@ non terminal BinaryExpression binaryExprLst;
 non terminal BinaryExpression binaryExprLesGrt;
 non terminal BinaryExpression binaryExprGrtEqu;
 non terminal BinaryExpression binaryExpr;
+non terminal BinaryExpression expr;
 
-non terminal CallStatement callStatement;
+
+non terminal CallStatement callStat;
 non terminal CompoundStatement compoundStat;
 non terminal EmptyStatement emptyStat;
 non terminal IntLiteral intLiteral;
@@ -97,14 +99,25 @@ start with program;
 
 program ::=  globalDef; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
 globalDef ::= typeDef | procedureDef;
-//typeDef ::=
+typeDef ::= TYPE IDENT EQ typeExpr SEMIC;
+typeExpr ::= ARRAY LBRACK INTLIT RBRACK OF typeExpr  | IDENT;
 
+namedTypeExpr ::= IDENT;
+namedVar ::= IDENT;
 variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC;
-//variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
+parameterDef ::= IDENT COLON namedTypeExpr | REF IDENT COLON namedTypeExpr;
+statement ::= ifStat | callStat | whileStat | emptyStat |assignStat |compoundStat;
 
-//namedTypeExpr ::= IDENT | ARRAY | REF;
+ifStat ::= IF LPAREN expr RPAREN LCURL             RCURL;
 
-arrayTypeExpr ::= ARRAY LBRACK INTLIT RBRACK OF namedTypeExpr SEMIC;
+
+
+
+
+
+
+arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC; //Mehr demesional beachten
+expr ::= INTLIT;//TODO muss zu booleasch baeachtaet werden ???
 
 //namedVar ::= IDENT  or  //arrayAccess // INITLIT;
 //variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
@@ -115,12 +128,6 @@ arrayTypeExpr ::= ARRAY LBRACK INTLIT RBRACK OF namedTypeExpr SEMIC;
 
 
 variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN arrayAccess ;
-//binaryExpr ::= binaryExpr STAR binaryExpr |
-//               binaryExpr PLUS binaryExpr |
-//               binaryExpr SLASH binaryExpr |
-//               LPAREN binaryExpr RPAREN |
-//               INTLIT
-//                 ( bi * bi )
 
 //
 //binaryExpr ::=  binaryexpr1
@@ -131,5 +138,5 @@ variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN a
 //             |  binaryexpr1 slash binaryexpr 2
 
 binaryExpr ::=  binaryExprPlMIN PLUS binaryExprPlMIN ;
+//namedTypeExpr ::= IDENT ;
 
-arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC;

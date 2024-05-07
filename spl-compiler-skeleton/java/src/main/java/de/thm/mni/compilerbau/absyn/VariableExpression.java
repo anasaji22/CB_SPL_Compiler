@@ -23,7 +23,6 @@ public final class VariableExpression extends Expression {
         super(position);
         this.variable = variable;
     }
-
     @Override
     public String toString() {
         return formatAst("VariableExpression", variable);
