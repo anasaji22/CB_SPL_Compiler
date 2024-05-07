@@ -44,6 +44,7 @@ ref { return symbol(Sym.REF);}
 type { return symbol(Sym.TYPE);}
 while { return symbol(Sym.WHILE);}
 var { return symbol(Sym.VAR);}
+0 { return symbol(Sym.INTLIT);}
 [a-zA-Z_][a-zA-Z0-9_]* { return symbol(Sym.IDENT);}
 [1-9][0-9]* { return symbol(Sym.INTLIT);}
 0X[0-9a-fA-F]+ { return symbol(Sym.INTLIT, yytext());}
@@ -65,11 +66,11 @@ var { return symbol(Sym.VAR);}
 \> { return symbol(Sym.GT);}
 \<= { return symbol(Sym.NE);}
 \>= { return symbol(Sym.GE);}
-\, { return symbol(Sym.COLON);}
+\, { return symbol(Sym.COMMA);}
 \; { return symbol(Sym.SEMIC);}
 \: { return symbol(Sym.COLON);}
 \:= { return symbol(Sym.ASGN);}
 \# { return symbol(Sym.NE);}
-'\\n' { return symbol(Sym.INTLIT, (int)yytext().charAt(2)); }
-
+'\\n' { return symbol(Sym.INTLIT, 10); }
+'.' { return symbol(Sym.INTLIT, (int) yytext().charAt(1)); }
 [^]		{throw SplError.LexicalError(new Position(yyline + 1, yycolumn + 1), yytext().charAt(0));}

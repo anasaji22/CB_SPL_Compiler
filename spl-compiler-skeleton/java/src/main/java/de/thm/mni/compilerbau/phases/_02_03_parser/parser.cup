@@ -69,7 +69,19 @@ non terminal NamedVariable namedVar;
 non terminal ArrayAccess arrayAccess;
 non terminal ArrayTypeExpression arrayTypeExpr;
 non terminal AssignStatement assignStat;
+
+//non terminal BinaryExpression binaryExprPlus;
+//non terminal BinaryExpression binaryExprMinu;
+non terminal BinaryExpression binaryExprPlMIN;
+non terminal BinaryExpression binaryExprMul;
+non terminal BinaryExpression binaryExprDiv;
+non terminal BinaryExpression binaryExprEqu;
+non terminal BinaryExpression binaryExprNequ;
+non terminal BinaryExpression binaryExprLst;
+non terminal BinaryExpression binaryExprLesGrt;
+non terminal BinaryExpression binaryExprGrtEqu;
 non terminal BinaryExpression binaryExpr;
+
 non terminal CallStatement callStatement;
 non terminal CompoundStatement compoundStat;
 non terminal EmptyStatement emptyStat;
@@ -81,5 +93,43 @@ non terminal VariableExpression variableExpr;
 non terminal WhileStatement whileStat;
 
 start with program;
+//type myInt = int;
 
 program ::=  globalDef; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+globalDef ::= typeDef | procedureDef;
+//typeDef ::=
+
+variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC;
+//variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
+
+//namedTypeExpr ::= IDENT | ARRAY | REF;
+
+arrayTypeExpr ::= ARRAY LBRACK INTLIT RBRACK OF namedTypeExpr SEMIC;
+
+//namedVar ::= IDENT  or  //arrayAccess // INITLIT;
+//variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
+//variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC;
+
+
+//binaryExprPlus ::= INTLIT  PLUS binaryExprPlus | INTLIT
+
+
+variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN arrayAccess ;
+//binaryExpr ::= binaryExpr STAR binaryExpr |
+//               binaryExpr PLUS binaryExpr |
+//               binaryExpr SLASH binaryExpr |
+//               LPAREN binaryExpr RPAREN |
+//               INTLIT
+//                 ( bi * bi )
+
+//
+//binaryExpr ::=  binaryexpr1
+//             | binaryExpr plus binaryexpr1
+//             | binaryExpr minus binaryexpr1
+//             binaryexpr1::= binaryexpr2
+//             | binaryexpr1 Star binaryexpr 2
+//             |  binaryexpr1 slash binaryexpr 2
+
+binaryExpr ::=  binaryExprPlMIN PLUS binaryExprPlMIN ;
+
+arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC;
