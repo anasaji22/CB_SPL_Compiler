@@ -64,6 +64,7 @@ non terminal ParameterDefinition parameterDef;
 non terminal VariableDefinition variableDef;
 non terminal Statement statement;
 non terminal IfStatement ifStat;
+non terminal IfStatement ifStatWithElse;
 non terminal NamedTypeExpression namedTypeExpr;
 non terminal NamedVariable namedVar;
 non terminal ArrayAccess arrayAccess;
@@ -71,16 +72,10 @@ non terminal ArrayTypeExpression typeExpr;
 non terminal AssignStatement assignStat;
 
 //non terminal BinaryExpression binaryExprPlus;
-//non terminal BinaryExpression binaryExprMinu;
-non terminal BinaryExpression binaryExprPlMIN;
-non terminal BinaryExpression binaryExprMul;
-non terminal BinaryExpression binaryExprDiv;
-non terminal BinaryExpression binaryExprEqu;
-non terminal BinaryExpression binaryExprNequ;
-non terminal BinaryExpression binaryExprLst;
-non terminal BinaryExpression binaryExprLesGrt;
-non terminal BinaryExpression binaryExprGrtEqu;
 non terminal BinaryExpression binaryExpr;
+non terminal BinaryExpression termPlusMinus;
+non terminal BinaryExpression mulDiv;
+non terminal BinaryExpression paren;
 non terminal BinaryExpression expr;
 
 
@@ -98,25 +93,62 @@ start with program;
 //type myInt = int;
 
 program ::=  globalDef; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+
 globalDef ::= typeDef | procedureDef;
+
 typeDef ::= TYPE IDENT EQ typeExpr SEMIC;
+
 typeExpr ::= ARRAY LBRACK INTLIT RBRACK OF typeExpr  | IDENT;
 
 namedTypeExpr ::= IDENT;
+
 namedVar ::= IDENT;
-variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC;
-parameterDef ::= IDENT COLON namedTypeExpr | REF IDENT COLON namedTypeExpr;
-statement ::= ifStat | callStat | whileStat | emptyStat |assignStat |compoundStat;
 
-ifStat ::= IF LPAREN expr RPAREN LCURL             RCURL;
+variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC | typeExpr ;
+
+parameterDef ::= IDENT COLON namedTypeExpr |
+                 REF IDENT COLON namedTypeExpr;
+
+statement ::= ifStat |
+              callStat |
+              whileStat |
+              emptyStat |
+              assignStat |
+              compoundStat;
+
+ifStat ::= IF LPAREN expr RPAREN statement | ifStatWithElse ; // ToDo else
+
+ifStatWithElse ::= IF LPAREN expr RPAREN statement ELSE statement;
+
+compoundStat ::= LCURL statement RCURL;
+
+whileStat ::= LPAREN expr RPAREN statement;
+
+emptyStat ::= SEMIC;
+
+callStat ::= IDENT LPAREN parameterDefList RPAREN SEMIC; //TODO paramater liste and not parameter defenition
+
+parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef; // TODO FALL (a) now (a,) is allowed
+
+procedureDef ::= PROC IDENT LPAREN parameterDefList RPAREN compoundStat; //´ TODO Variable deklaration
+
+
+//TOASK:: darf man die geschweifte Klammer so lassen ??
+
+//proc printErrorUnexpectedEndOfInput(ref success: int) {
+//    {
+//	printc('['); printc('e'); printc('r'); printc('r'); printc('o'); printc('r'); printc(']'); printc(' ');
+//	printc('u'); printc('n'); printc('e'); printc('x'); printc('p'); printc('e'); printc('c'); printc('t');
+//	printc('e'); printc('d'); printc(' '); printc('e'); printc('n'); printc('d'); printc(' '); printc('o');
+//	printc('f'); printc(' '); printc('i'); printc('n'); printc('p'); printc('u'); printc('t'); printc('\n');
+//    }
+//	success := 0;
+//}
+//
 
 
 
-
-
-
-
-arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC; //Mehr demesional beachten
+arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC; // TODO Mehr demesional beachten
 expr ::= INTLIT;//TODO muss zu booleasch baeachtaet werden ???
 
 //namedVar ::= IDENT  or  //arrayAccess // INITLIT;
@@ -127,7 +159,7 @@ expr ::= INTLIT;//TODO muss zu booleasch baeachtaet werden ???
 //binaryExprPlus ::= INTLIT  PLUS binaryExprPlus | INTLIT
 
 
-variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN arrayAccess ;
+//variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN arrayAccess ;
 
 //
 //binaryExpr ::=  binaryexpr1
@@ -136,7 +168,43 @@ variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN a
 //             binaryexpr1::= binaryexpr2
 //             | binaryexpr1 Star binaryexpr 2
 //             |  binaryexpr1 slash binaryexpr 2
-
-binaryExpr ::=  binaryExprPlMIN PLUS binaryExprPlMIN ;
+//
+//binaryExpr ::=  binaryExprPlMIN PLUS binaryExprPlMIN ;
 //namedTypeExpr ::= IDENT ;
+//
 
+
+//binaryExpr ::= termPlusMinus LE termPlusMinus |
+//               termPlusMinus GT termPlusMinus |
+//               termPlusMinus EQ termPlusMinus |
+//               termPlusMinus LT termPlusMinus |
+//               termPlusMinus NE termPlusMinus |
+//               termPlusMinus GE termPlusMinus;
+
+//
+//binaryExpr ::= termPlusMinus |
+//               binaryExpr LE binaryExpr |
+//               binaryExpr GT binaryExpr |
+//               binaryExpr EQ binaryExpr |
+//               binaryExpr LT binaryExpr |
+//               binaryExpr NE binaryExpr |
+//               binaryExpr GE binaryExpr;
+//
+binaryExpr ::= termPlusMinus |
+               binaryExpr LE termPlusMinus |
+               binaryExpr GT termPlusMinus |
+               binaryExpr EQ termPlusMinus |
+               binaryExpr LT termPlusMinus |
+               binaryExpr NE termPlusMinus |
+               binaryExpr GE termPlusMinus;
+
+termPlusMinus ::= mulDiv |
+                    termPlusMinus PLUS mulDiv |
+                    termPlusMinus MINUS mulDiv;
+
+mulDiv ::= paren |
+            mulDiv STAR paren
+            mulDiv SLASH paren;
+paren ::= INTLIT |
+            LPAREN binaryExpr RPAREN
+            | IDENT;
