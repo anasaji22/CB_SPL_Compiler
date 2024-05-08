@@ -132,7 +132,8 @@ parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef; // TODO
 
 procedureDef ::= PROC IDENT LPAREN parameterDefList RPAREN compoundStat; //´ TODO Variable deklaration
 
-
+assignStat ::= namedVar ASGN termPlusMinus SEMIC;
+//a[1] := x < b ist das erlaubt also 1 = true und 0 = false? (binaryExpr)
 //TOASK:: darf man die geschweifte Klammer so lassen ??
 
 //proc printErrorUnexpectedEndOfInput(ref success: int) {
@@ -150,6 +151,8 @@ procedureDef ::= PROC IDENT LPAREN parameterDefList RPAREN compoundStat; //´ TO
 
 arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC; // TODO Mehr demesional beachten
 expr ::= INTLIT;//TODO muss zu booleasch baeachtaet werden ???
+//expr ::= binaryExpr |
+//
 
 //namedVar ::= IDENT  or  //arrayAccess // INITLIT;
 //variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
@@ -202,9 +205,14 @@ termPlusMinus ::= mulDiv |
                     termPlusMinus PLUS mulDiv |
                     termPlusMinus MINUS mulDiv;
 
-mulDiv ::= paren |
-            mulDiv STAR paren
-            mulDiv SLASH paren;
+mulDiv ::= unaryExpr |
+            mulDiv STAR unaryExpr
+            mulDiv SLASH unaryExpr;
+
+unaryExpr ::= paren |
+               MINUS paren // so ist 1 --(1+2) erlaubt ??
+               PLUS paren;// so ist aber 1 ++(1+2) erlaubt ??
+
 paren ::= INTLIT |
             LPAREN binaryExpr RPAREN
             | IDENT;
