@@ -60,14 +60,18 @@ non terminal GlobalDefinition globalDef;
 non terminal List<GlobalDefinition> globalDefList;
 non terminal List<ParameterDefinition> parameterDefList;
 non terminal ProcedureDefinition procedureDef;
+non terminal ProcedureDefinition optionaleParaDef;
 non terminal ParameterDefinition parameterDef;
 non terminal VariableDefinition variableDef;
 non terminal Statement statement;
 non terminal IfStatement ifStat;
-non terminal IfStatement ifStatWithElse;
+non terminal IfStatement optionaleEles;
 non terminal NamedTypeExpression namedTypeExpr;
 non terminal NamedVariable namedVar;
 non terminal ArrayAccess arrayAccess;
+non terminal optionaleDimension;
+non terminal dimensionRest;
+
 non terminal ArrayTypeExpression typeExpr;
 non terminal AssignStatement assignStat;
 
@@ -86,28 +90,33 @@ non terminal IntLiteral intLiteral;
 non terminal Position position;
 non terminal TypeDefinition typeDef;
 non terminal UnaryExpression unaryExpr;
-non terminal VariableExpression variableExpr;
+non terminal VariableExpression variable;
 non terminal WhileStatement whileStat;
-
+non terminal epsilon;
+non terminal List<VariableDefinition> variableDefList;
+non terminal List<Statement> statementList;
+non terminal List<Expression> exprList;
 start with program;
 //type myInt = int;
 
-program ::=  globalDef; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+program ::=  globalDefList; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
 
 globalDef ::= typeDef | procedureDef;
 
 typeDef ::= TYPE IDENT EQ typeExpr SEMIC;
 
 typeExpr ::= ARRAY LBRACK INTLIT RBRACK OF typeExpr  | IDENT;
-
-namedTypeExpr ::= IDENT;
-
+epsilon ::= ;
+//namedTypeExpr ::= IDENT;
+//
 namedVar ::= IDENT;
-
-variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC | typeExpr ;
-
-parameterDef ::= IDENT COLON namedTypeExpr |
-                 REF IDENT COLON namedTypeExpr;
+statementList ::= epsilon | statement statementList;
+variableDef ::= VAR IDENT COLON typeExpr SEMIC;
+globalDefList ::= epsilon | globalDef globalDefList;
+variableDefList ::= epsilon | variableDef variableDefList;
+parameterDef ::= IDENT COLON typeExpr |
+                 REF IDENT COLON typeExpr;
+parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef ; // TODO FALL (a) now (a,) is allowed
 
 statement ::= ifStat |
               callStat |
@@ -115,84 +124,35 @@ statement ::= ifStat |
               emptyStat |
               assignStat |
               compoundStat;
+optionaleEles ::= epsilon | ELSE statement;
 
-ifStat ::= IF LPAREN expr RPAREN statement | ifStatWithElse ; // ToDo else
 
-ifStatWithElse ::= IF LPAREN expr RPAREN statement ELSE statement;
 
-compoundStat ::= LCURL statement RCURL;
+ifStat ::= IF LPAREN expr RPAREN statement optionaleEles;
+
+compoundStat ::= LCURL statementList RCURL;
 
 whileStat ::= LPAREN expr RPAREN statement;
 
 emptyStat ::= SEMIC;
 
-callStat ::= IDENT LPAREN parameterDefList RPAREN SEMIC; //TODO paramater liste and not parameter defenition
+callStat ::= IDENT LPAREN exprList RPAREN SEMIC; //TODO ist das richtg bzw expr ändern ??
 
-parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef; // TODO FALL (a) now (a,) is allowed
+procedureDef ::= PROC IDENT LPAREN optionaleParaDef RPAREN LCURL variableDefList statementList RCURL; //´ TODO epsilon
+optionaleParaDef ::= parameterDefList | epsilon;
+assignStat ::= variable ASGN termPlusMinus SEMIC;
 
-procedureDef ::= PROC IDENT LPAREN parameterDefList RPAREN compoundStat; //´ TODO Variable deklaration
+exprList ::= epsilon | expr COMMA exprList;
 
-assignStat ::= namedVar ASGN termPlusMinus SEMIC;
-//a[1] := x < b ist das erlaubt also 1 = true und 0 = false? (binaryExpr)
-//TOASK:: darf man die geschweifte Klammer so lassen ??
-
-//proc printErrorUnexpectedEndOfInput(ref success: int) {
-//    {
-//	printc('['); printc('e'); printc('r'); printc('r'); printc('o'); printc('r'); printc(']'); printc(' ');
-//	printc('u'); printc('n'); printc('e'); printc('x'); printc('p'); printc('e'); printc('c'); printc('t');
-//	printc('e'); printc('d'); printc(' '); printc('e'); printc('n'); printc('d'); printc(' '); printc('o');
-//	printc('f'); printc(' '); printc('i'); printc('n'); printc('p'); printc('u'); printc('t'); printc('\n');
-//    }
-//	success := 0;
-//}
-//
+arrayAccess ::= IDENT optionaleDimension  ;
+optionaleDimension ::= LBRACK expr RBRACK optionaleDimension | epsilon;
+expr ::=binaryExpr;//TODO muss zu booleasch baeachtaet werden ???
 
 
+variable ::=  arrayAccess;
 
-arrayAccess ::= IDENT LBRACK INTLIT RBRACK SEMIC; // TODO Mehr demesional beachten
-expr ::= INTLIT;//TODO muss zu booleasch baeachtaet werden ???
-//expr ::= binaryExpr |
-//
-
-//namedVar ::= IDENT  or  //arrayAccess // INITLIT;
-//variableDef ::= VAR namedVar COLON namedTypeExpr SEMIC;
-//variableDef ::= VAR IDENT COLON namedTypeExpr SEMIC;
-
-
-//binaryExprPlus ::= INTLIT  PLUS binaryExprPlus | INTLIT
-
-
-//variableExpr ::= namedVar ASGN INTLIT | namedVar ASGN namedVar | namedVar ASGN arrayAccess ;
-
-//
-//binaryExpr ::=  binaryexpr1
-//             | binaryExpr plus binaryexpr1
-//             | binaryExpr minus binaryexpr1
-//             binaryexpr1::= binaryexpr2
-//             | binaryexpr1 Star binaryexpr 2
-//             |  binaryexpr1 slash binaryexpr 2
-//
-//binaryExpr ::=  binaryExprPlMIN PLUS binaryExprPlMIN ;
 //namedTypeExpr ::= IDENT ;
-//
 
-
-//binaryExpr ::= termPlusMinus LE termPlusMinus |
-//               termPlusMinus GT termPlusMinus |
-//               termPlusMinus EQ termPlusMinus |
-//               termPlusMinus LT termPlusMinus |
-//               termPlusMinus NE termPlusMinus |
-//               termPlusMinus GE termPlusMinus;
-
-//
-//binaryExpr ::= termPlusMinus |
-//               binaryExpr LE binaryExpr |
-//               binaryExpr GT binaryExpr |
-//               binaryExpr EQ binaryExpr |
-//               binaryExpr LT binaryExpr |
-//               binaryExpr NE binaryExpr |
-//               binaryExpr GE binaryExpr;
-//
 binaryExpr ::= termPlusMinus |
                binaryExpr LE termPlusMinus |
                binaryExpr GT termPlusMinus |
@@ -210,9 +170,7 @@ mulDiv ::= unaryExpr |
             mulDiv SLASH unaryExpr;
 
 unaryExpr ::= paren |
-               MINUS paren // so ist 1 --(1+2) erlaubt ??
-               PLUS paren;// so ist aber 1 ++(1+2) erlaubt ??
-
+               MINUS unaryExpr; // so ist 1 --(1+2) erlaubt ??
 paren ::= INTLIT |
             LPAREN binaryExpr RPAREN
-            | IDENT;
+            | variable;

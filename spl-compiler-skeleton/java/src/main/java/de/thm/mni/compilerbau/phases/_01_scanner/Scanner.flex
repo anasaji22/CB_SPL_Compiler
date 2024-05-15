@@ -44,10 +44,9 @@ ref { return symbol(Sym.REF);}
 type { return symbol(Sym.TYPE);}
 while { return symbol(Sym.WHILE);}
 var { return symbol(Sym.VAR);}
-0 { return symbol(Sym.INTLIT);}
-[a-zA-Z_][a-zA-Z0-9_]* { return symbol(Sym.IDENT);}
-[1-9][0-9]* { return symbol(Sym.INTLIT);}
-0X[0-9a-fA-F]+ { return symbol(Sym.INTLIT, yytext());}
+[a-zA-Z_][a-zA-Z0-9_]* { return symbol(Sym.IDENT, new Identifier(yytext()));}
+[0-9][0-9]* { return symbol(Sym.INTLIT, Integer.parseInt(yytext()));}
+0x[0-9a-fA-F]+ { return symbol(Sym.INTLIT, Integer.parseInt(yytext().substring(2), 16));}
 \( { return symbol(Sym.LPAREN);}
 \) { return symbol(Sym.RPAREN);}
 \{ { return symbol(Sym.LCURL);}
