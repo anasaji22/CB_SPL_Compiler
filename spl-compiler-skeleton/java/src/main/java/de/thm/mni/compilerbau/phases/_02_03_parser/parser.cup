@@ -117,6 +117,7 @@ variableDefList ::= epsilon | variableDef variableDefList;
 parameterDef ::= IDENT COLON typeExpr |
                  REF IDENT COLON typeExpr;
 parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef ; // TODO FALL (a) now (a,) is allowed
+procedureDef ::= PROC IDENT LPAREN optionaleParaDef RPAREN LCURL variableDefList statementList RCURL; //´ TODO epsilon
 
 statement ::= ifStat |
               callStat |
@@ -126,23 +127,20 @@ statement ::= ifStat |
               compoundStat;
 optionaleEles ::= epsilon | ELSE statement;
 
-
-
 ifStat ::= IF LPAREN expr RPAREN statement optionaleEles;
 
 compoundStat ::= LCURL statementList RCURL;
 
-whileStat ::= LPAREN expr RPAREN statement;
+whileStat ::= WHILE LPAREN expr RPAREN statement;
 
 emptyStat ::= SEMIC;
 
 callStat ::= IDENT LPAREN exprList RPAREN SEMIC; //TODO ist das richtg bzw expr ändern ??
 
-procedureDef ::= PROC IDENT LPAREN optionaleParaDef RPAREN LCURL variableDefList statementList RCURL; //´ TODO epsilon
 optionaleParaDef ::= parameterDefList | epsilon;
 assignStat ::= variable ASGN termPlusMinus SEMIC;
 
-exprList ::= epsilon | expr COMMA exprList;
+exprList ::= epsilon | expr COMMA exprList | expr;
 
 arrayAccess ::= IDENT optionaleDimension  ;
 optionaleDimension ::= LBRACK expr RBRACK optionaleDimension | epsilon;
@@ -153,24 +151,26 @@ variable ::=  arrayAccess;
 
 //namedTypeExpr ::= IDENT ;
 
-binaryExpr ::= termPlusMinus |
-               binaryExpr LE termPlusMinus |
-               binaryExpr GT termPlusMinus |
-               binaryExpr EQ termPlusMinus |
-               binaryExpr LT termPlusMinus |
-               binaryExpr NE termPlusMinus |
-               binaryExpr GE termPlusMinus;
 
-termPlusMinus ::= mulDiv |
-                    termPlusMinus PLUS mulDiv |
-                    termPlusMinus MINUS mulDiv;
+binaryExpr ::= binaryExpr LE termPlusMinus
+             | binaryExpr GT termPlusMinus
+             | binaryExpr EQ termPlusMinus
+             | binaryExpr LT termPlusMinus
+             | binaryExpr NE termPlusMinus
+             | binaryExpr GE termPlusMinus
+             | termPlusMinus;
 
-mulDiv ::= unaryExpr |
-            mulDiv STAR unaryExpr
-            mulDiv SLASH unaryExpr;
+termPlusMinus ::= termPlusMinus PLUS mulDiv
+                | termPlusMinus MINUS mulDiv
+                | mulDiv;
 
-unaryExpr ::= paren |
-               MINUS unaryExpr; // so ist 1 --(1+2) erlaubt ??
-paren ::= INTLIT |
-            LPAREN binaryExpr RPAREN
-            | variable;
+mulDiv ::= mulDiv STAR unaryExpr
+         | mulDiv SLASH unaryExpr
+         | unaryExpr;
+
+unaryExpr ::= MINUS unaryExpr
+            | paren;
+
+paren ::= INTLIT
+        | LPAREN expr RPAREN
+        | variable;
