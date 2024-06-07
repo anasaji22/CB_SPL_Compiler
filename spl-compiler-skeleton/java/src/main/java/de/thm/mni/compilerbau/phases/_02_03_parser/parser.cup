@@ -60,7 +60,7 @@ non terminal GlobalDefinition globalDef;
 non terminal List<GlobalDefinition> globalDefList;
 non terminal List<ParameterDefinition> parameterDefList;
 non terminal ProcedureDefinition procedureDef;
-non terminal ProcedureDefinition optionaleParaDef;
+non terminal List<ParameterDefinition> optionaleParaDef;
 non terminal ParameterDefinition parameterDef;
 non terminal VariableDefinition variableDef;
 non terminal Statement statement;
@@ -72,7 +72,7 @@ non terminal ArrayAccess arrayAccess;
 non terminal optionaleDimension;
 non terminal dimensionRest;
 
-non terminal ArrayTypeExpression typeExpr;
+non terminal TypeExpression typeExpr;
 non terminal AssignStatement assignStat;
 
 //non terminal BinaryExpression binaryExprPlus;
@@ -99,25 +99,45 @@ non terminal List<Expression> exprList;
 start with program;
 //type myInt = int;
 
-program ::=  globalDefList; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+program ::=  globalDefList
+: globalDefList{:RESULT = new Program(new Position(globalDefListleft,globalDefListright), globalDefList );:};
 
-globalDef ::= typeDef | procedureDef;
+globalDef ::= typeDef : typeDef{:RESULT = typeDef;:} | procedureDef: procDef{:RESULT = procDef;:};
 
-typeDef ::= TYPE IDENT EQ typeExpr SEMIC;
+typeDef ::= TYPE: type IDENT: name EQ:eq typeExpr: typeExpr SEMIC
+    {:RESULT = new TypeDefinition(new Position(typeleft, typeright), name, typeExpr);:};
 
-typeExpr ::= ARRAY LBRACK INTLIT RBRACK OF typeExpr  | IDENT;
-epsilon ::= ;
-//namedTypeExpr ::= IDENT;
-//
-namedVar ::= IDENT;
-statementList ::= epsilon | statement statementList;
-variableDef ::= VAR IDENT COLON typeExpr SEMIC;
-globalDefList ::= epsilon | globalDef globalDefList;
-variableDefList ::= epsilon | variableDef variableDefList;
-parameterDef ::= IDENT COLON typeExpr |
-                 REF IDENT COLON typeExpr;
-parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef ; // TODO FALL (a) now (a,) is allowed
-procedureDef ::= PROC IDENT LPAREN optionaleParaDef RPAREN LCURL variableDefList statementList RCURL; //´ TODO epsilon
+typeExpr ::= ARRAY:array LBRACK: lbrack  INTLIT: intlit RBRACK
+                    : rbrack  OF: of typeExpr: typeExpr{:
+                                                    RESULT = new ArrayTypeExpression(new Position(arrayleft, arrayright), intlit , typeExpr );
+                                                        :}
+            | IDENT: ident {:RESULT = new NamedTypeExpression(new Position(identleft, identright), ident);:};
+epsilon ::= {:RESULT = nil();:};
+
+namedVar ::= IDENT: ident {:RESULT = new NamedVariable(new Position(identleft, identright), ident);:};
+
+statementList ::= epsilon: epsilon {:RESULT = nil();:}| statement:head statementList: tail{:RESULT = cons(head, tail);:};
+
+variableDef ::= VAR:var IDENT: ident  COLON: co typeExpr: typeExpr SEMIC {:
+                    RESULT = new VariableDefinition(new Position(varleft, varright),ident, typeExpr);:};
+
+
+globalDefList ::= epsilon: epsilon {:RESULT = nil();:}
+                | globalDef: tail globalDefList: head{: RESULT = cons(tail, head); :};
+
+variableDefList ::= epsilon : epsilon {:RESULT = nil();:}
+                    | variableDef:head variableDefList:tail {: RESULT = cons(head, tail);:};
+
+
+parameterDef ::= IDENT:ident  COLON typeExpr: typeExpr |
+                 REF:ref IDENT : ident COLON typeExpr : typeExpr;
+
+
+parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef ;
+
+procedureDef ::= PROC:proc IDENT:ident LPAREN optionaleParaDef: optionaleParaDef RPAREN
+                LCURL variableDefList:variableDefList statementList:statementList RCURL{:
+                RESULT = new ProcedureDefinition(new Position(procleft, procright), ident,optionaleParaDef,variableDefList,statementList );:};
 
 statement ::= ifStat |
               callStat |
