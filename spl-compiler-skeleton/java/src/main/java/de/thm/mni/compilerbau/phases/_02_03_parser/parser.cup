@@ -16,19 +16,19 @@ parser code {:
     // Apparently there is a cup bug that causes expected_token_ids() to return incorrect results on first call
     // This is why this call is inserted.
     this.expected_token_ids();
-    
+
     throw SplError.SyntaxError(new Position(currentToken.left, currentToken.right),
             this.symbl_name_from_id(currentToken.sym),
             this.expected_token_ids().stream().map(this::symbl_name_from_id).toList());
   }
-  
+
   /**
    * @return An empty list. (Uses LinkedList)
    */
   public static <E> List<E> nil() {
       return new LinkedList<E>();
   }
-  
+
   /**
    * Constructs a list from a head and a tail without modifying the tail (Uses LinkedList).
    * Use this as a helper if you don't want to deal with constructing lists manually.
@@ -99,13 +99,17 @@ non terminal List<Expression> exprList;
 start with program;
 //type myInt = int;
 
-program ::=  globalDefList
-: globalDefList{:RESULT = new Program(new Position(globalDefListleft,globalDefListright), globalDefList );:};
+program ::=  globalDefList : globalDefList
+        {:
+         RESULT = new Program(new Position(globalDefListleft,globalDefListright), globalDefList );
+        :};
 
-globalDef ::= typeDef : typeDef{:RESULT = typeDef;:} | procedureDef: procDef{:RESULT = procDef;:};
+globalDef ::= typeDef : typeDef {: RESULT = typeDef;:} | procedureDef : procDef {: RESULT = procDef;:};
 
 typeDef ::= TYPE: type IDENT: name EQ:eq typeExpr: typeExpr SEMIC
-    {:RESULT = new TypeDefinition(new Position(typeleft, typeright), name, typeExpr);:};
+        {:
+        RESULT = new TypeDefinition(new Position(typeleft, typeright), name, typeExpr);
+        :};
 
 typeExpr ::= ARRAY:array LBRACK: lbrack  INTLIT: intlit RBRACK
                     : rbrack  OF: of typeExpr: typeExpr{:
@@ -129,68 +133,126 @@ variableDefList ::= epsilon : epsilon {:RESULT = nil();:}
                     | variableDef:head variableDefList:tail {: RESULT = cons(head, tail);:};
 
 
-parameterDef ::= IDENT:ident  COLON typeExpr: typeExpr |
-                 REF:ref IDENT : ident COLON typeExpr : typeExpr;
+parameterDef ::= IDENT : ident  COLON typeExpr: typeExpr {:
+                RESULT = new ParameterDefinition(new Position(identleft, identright), ident,typeExpr, false);:}|
+                 REF : ref IDENT : ident COLON typeExpr : typeExpr {:
+                  RESULT = new ParameterDefinition(new Position(refleft, refright), ident, typeExpr, true);:};
 
 
-parameterDefList ::= parameterDef COMMA parameterDefList | parameterDef ;
+parameterDefList ::= parameterDef : head COMMA parameterDefList : tail {:
+                    RESULT = cons(head, tail);:}
+                    | parameterDef : parameterDef {:RESULT = cons(parameterDef, nil());:};
 
 procedureDef ::= PROC:proc IDENT:ident LPAREN optionaleParaDef: optionaleParaDef RPAREN
                 LCURL variableDefList:variableDefList statementList:statementList RCURL{:
                 RESULT = new ProcedureDefinition(new Position(procleft, procright), ident,optionaleParaDef,variableDefList,statementList );:};
 
-statement ::= ifStat |
-              callStat |
-              whileStat |
-              emptyStat |
-              assignStat |
-              compoundStat;
-optionaleEles ::= epsilon | ELSE statement;
+statement ::= ifStat:ifStat {: RESULT = ifStat;:} |
+              callStat:callStat {: RESULT = callStat;:}|
+              whileStat:whileStat  {: RESULT = whileStat;:}|
+              emptyStat:emptyStat  {: RESULT = emptyStat;:}|
+              assignStat:assignStat  {: RESULT = assignStat;:}|
+              compoundStat:compoundStat {: RESULT = compoundStat;:};
+optionaleEles ::= epsilon: epsilon {:RESULT = epsilon;:}  | ELSE:else statement: state
+        {:
+        RESULT = state;
+        :};
 
-ifStat ::= IF LPAREN expr RPAREN statement optionaleEles;
+ifStat ::= IF: if LPAREN expr : expr RPAREN statement : state optionaleEles : optionaleEles
+            {:
+            RESULT =  new IfStatement(new Position(ifleft, ifright), expr, state, optionaleEles);:};
 
-compoundStat ::= LCURL statementList RCURL;
+compoundStat ::= LCURL:lcurl statementList:statementList RCURL
+        {:
+        RESULT = new CompoundStatement(new Position(lcurlleft, lcurlright), statementList);
+        :};
 
-whileStat ::= WHILE LPAREN expr RPAREN statement;
+whileStat ::= WHILE: while  LPAREN expr:expr RPAREN statement:state
+        {:
+        RESULT = new WhileStatement(new Position(whileleft, whileright),expr, state);
+        :};
 
-emptyStat ::= SEMIC;
+emptyStat ::= SEMIC:semic {:RESULT = new EmptyStatement(new Position(semicleft, semicright));:};
 
-callStat ::= IDENT LPAREN exprList RPAREN SEMIC; //TODO ist das richtg bzw expr ändern ??
+callStat ::= IDENT:ident LPAREN exprList:exprList RPAREN SEMIC
+        {:
+        RESULT = new CallStatement(new Position(identleft, identright), ident, exprList);
+        :};
 
-optionaleParaDef ::= parameterDefList | epsilon;
-assignStat ::= variable ASGN termPlusMinus SEMIC;
+optionaleParaDef ::= parameterDefList : parameterDefList {:RESULT = parameterDefList;:} | epsilon {:RESULT = nil();:};
 
-exprList ::= epsilon | expr COMMA exprList | expr;
+assignStat ::= variable:variable ASGN termPlusMinus: termPlusMinus SEMIC
+        {:
+        RESULT = new AssignStatement(new Position(variableleft, variableright), variable , termPlusMinus);
+        :};
 
-arrayAccess ::= IDENT optionaleDimension  ;
-optionaleDimension ::= LBRACK expr RBRACK optionaleDimension | epsilon;
-expr ::=binaryExpr;//TODO muss zu booleasch baeachtaet werden ???
+exprList ::= exprList:head COMMA:comma expr:tail
+        {:
+        RESULT = cons(tail, head);
+         :}
+        | expr:expr
+            {:
+             RESULT = cons(expr, nil());
+            :}
+          | epsilon {: RESULT = nil(); :};
 
 
-variable ::=  arrayAccess;
+arrayAccess ::= IDENT:ident optionaleDimension:optionaleDimension
+        {:
+        new ArrayAccess(new Position(identleft, right),ident, optionaleDimension );
+//TODO ASK how to use ArrayAccess(Position position, Variable array, Expression index)
 
-//namedTypeExpr ::= IDENT ;
+        :};
 
+optionaleDimension ::= LBRACK expr:head RBRACK optionaleDimension:tail {:RESULT= cons(head, tail);:} | epsilon {: RESULT = nil(); :};
 
-binaryExpr ::= binaryExpr LE termPlusMinus
-             | binaryExpr GT termPlusMinus
-             | binaryExpr EQ termPlusMinus
-             | binaryExpr LT termPlusMinus
-             | binaryExpr NE termPlusMinus
-             | binaryExpr GE termPlusMinus
-             | termPlusMinus;
+expr ::= binaryExpr:binaryExpr
+        {:
+        RESULT = binaryExpr;
+        :};
 
-termPlusMinus ::= termPlusMinus PLUS mulDiv
-                | termPlusMinus MINUS mulDiv
-                | mulDiv;
+variable ::=  arrayAccess: arrayAccess
+        {:
+        RESULT = arrayAccess;
+        :};
 
-mulDiv ::= mulDiv STAR unaryExpr
-         | mulDiv SLASH unaryExpr
-         | unaryExpr;
+binaryExpr ::= binaryExpr:lop LE:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LE, lop, rop); :}
+            | binaryExpr:lop GT:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GT, lop, rop); :}
+            | binaryExpr:lop EQ:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.EQ, lop, rop); :}
+            | binaryExpr:lop LT:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LT, lop, rop); :}
+            | binaryExpr:lop NE:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.NE, lop, rop); :}
+            | binaryExpr:lop GE:op termPlusMinus:rop
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GE, lop, rop); :}
+            | termPlusMinus:term
+              {: RESULT = term; :};
 
-unaryExpr ::= MINUS unaryExpr
-            | paren;
+termPlusMinus ::= termPlusMinus:lop PLUS:op mulDiv:rop
+                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.PLUS, lop, rop); :}
+               | termPlusMinus:lop MINUS:op mulDiv:rop
+                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.MINUS, lop, rop); :}
+               | mulDiv:term
+                 {: RESULT = term; :};
 
-paren ::= INTLIT
-        | LPAREN expr RPAREN
-        | variable;
+mulDiv ::= mulDiv:lop STAR:op unaryExpr:rop
+          {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.MUL, lop, rop); :}
+        | mulDiv:lop SLASH:op unaryExpr:rop
+          {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.DIV, lop, rop); :}
+        | unaryExpr:term
+          {: RESULT = term; :};
+
+unaryExpr ::= MINUS:op unaryExpr:term
+             {: RESULT = new UnaryExpression(new Position(opleft, opright), UnaryExpression.Operator.NEG, term); :}
+           | paren:term
+             {: RESULT = term; :};
+
+paren ::= INTLIT:lit
+        {: RESULT = new IntegerLiteral(new Position(litleft, litright), lit); :}
+       | LPAREN:lp expr:term RPAREN:rp
+         {: RESULT = term; :}
+       | variable:var
+         {: RESULT = var; :};
