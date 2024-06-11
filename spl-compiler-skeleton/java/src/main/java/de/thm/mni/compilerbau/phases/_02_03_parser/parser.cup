@@ -96,6 +96,7 @@ non terminal epsilon;
 non terminal List<VariableDefinition> variableDefList;
 non terminal List<Statement> statementList;
 non terminal List<Expression> exprList;
+non terminal List<Expression> exprList2;
 start with program;
 //type myInt = int;
 
@@ -177,7 +178,7 @@ whileStat ::= WHILE: WHILE  LPAREN expr:expr RPAREN statement:state
 
 emptyStat ::= SEMIC:semic {:RESULT = new EmptyStatement(new Position(semicleft, semicright));:};
 
-callStat ::= IDENT:ident LPAREN exprList:exprList RPAREN SEMIC
+callStat ::= IDENT:ident LPAREN exprList2:exprList RPAREN SEMIC
         {:
         RESULT = new CallStatement(new Position(identleft, identright), ident, exprList);
         :};
@@ -189,15 +190,17 @@ assignStat ::= arrayAccess:variable ASGN termPlusMinus: termPlusMinus SEMIC
         RESULT = new AssignStatement(new Position(variableleft, variableright), variable , termPlusMinus);
         :};
 
-exprList ::= exprList:head COMMA:comma expr:tail
+exprList ::= expr :head COMMA:comma exprList:tail
         {:
-        RESULT = cons(tail, head);
+        RESULT = cons(head, tail);
          :}
         | expr:expr
             {:
              RESULT = cons(expr, nil());
             :}
-          | epsilon {: RESULT = nil(); :};
+          ;
+exprList2 ::=  epsilon {: RESULT = nil(); :}
+                | exprList:exprList {:RESULT = exprList;:};
 
 
 arrayAccess ::= IDENT:ident optionaleDimension:optionaleDimension
@@ -228,17 +231,17 @@ expr ::= binaryExpr:binaryExpr
 //        RESULT = arrayAccess;
 //        :};
 
-binaryExpr ::= binaryExpr:lop LE:op termPlusMinus:rop
+binaryExpr ::= termPlusMinus:lop LE:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LSE, lop, rop); :}
-            | binaryExpr:lop GT:op termPlusMinus:rop
+            | termPlusMinus:lop GT:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GRT, lop, rop); :}
-            | binaryExpr:lop EQ:op termPlusMinus:rop
+            | termPlusMinus:lop EQ:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.EQU, lop, rop); :}
-            | binaryExpr:lop LT:op termPlusMinus:rop
+            | termPlusMinus:lop LT:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LST, lop, rop); :}
-            | binaryExpr:lop NE:op termPlusMinus:rop
+            | termPlusMinus:lop NE:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.NEQ, lop, rop); :}
-            | binaryExpr:lop GE:op termPlusMinus:rop
+            | termPlusMinus:lop GE:op termPlusMinus:rop
               {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GRE, lop, rop); :}
             | termPlusMinus:term
               {: RESULT = term; :};

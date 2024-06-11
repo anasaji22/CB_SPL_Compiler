@@ -63,13 +63,12 @@ var { return symbol(Sym.VAR);}
 \# { return symbol(Sym.NE);}
 \< { return symbol(Sym.LT);}
 \> { return symbol(Sym.GT);}
-\<= { return symbol(Sym.NE);}
+\<= { return symbol(Sym.LE);}
 \>= { return symbol(Sym.GE);}
 \, { return symbol(Sym.COMMA);}
 \; { return symbol(Sym.SEMIC);}
 \: { return symbol(Sym.COLON);}
 \:= { return symbol(Sym.ASGN);}
-\# { return symbol(Sym.NE);}
 '\\n' { return symbol(Sym.INTLIT, 10); }
 '.' { return symbol(Sym.INTLIT, (int) yytext().charAt(1)); }
 [^]		{throw SplError.LexicalError(new Position(yyline + 1, yycolumn + 1), yytext().charAt(0));}
