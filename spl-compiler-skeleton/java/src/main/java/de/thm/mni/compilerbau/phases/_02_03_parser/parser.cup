@@ -64,34 +64,34 @@ non terminal List<ParameterDefinition> optionaleParaDef;
 non terminal ParameterDefinition parameterDef;
 non terminal VariableDefinition variableDef;
 non terminal Statement statement;
-non terminal IfStatement ifStat;
-non terminal IfStatement optionaleEles;
-non terminal NamedTypeExpression namedTypeExpr;
-non terminal NamedVariable namedVar;
-non terminal ArrayAccess arrayAccess;
-non terminal optionaleDimension;
-non terminal dimensionRest;
+non terminal Statement ifStat;
+non terminal Statement optionaleEles;
+//non terminal Expression namedTypeExpr;
+//non terminal NamedVariable namedVar;
+non terminal Variable arrayAccess;
+non terminal List<Expression> optionaleDimension;
+//non terminal dimensionRest;
 
 non terminal TypeExpression typeExpr;
-non terminal AssignStatement assignStat;
+non terminal Statement assignStat;
 
 //non terminal BinaryExpression binaryExprPlus;
-non terminal BinaryExpression binaryExpr;
-non terminal BinaryExpression termPlusMinus;
-non terminal BinaryExpression mulDiv;
-non terminal BinaryExpression paren;
-non terminal BinaryExpression expr;
+non terminal Expression binaryExpr;
+non terminal Expression termPlusMinus;
+non terminal Expression mulDiv;
+non terminal Expression paren;
+non terminal Expression expr;
 
 
-non terminal CallStatement callStat;
-non terminal CompoundStatement compoundStat;
-non terminal EmptyStatement emptyStat;
-non terminal IntLiteral intLiteral;
-non terminal Position position;
+non terminal Statement callStat;
+non terminal Statement compoundStat;
+non terminal Statement emptyStat;
+//non terminal IntLiteral intLiteral;
+//non terminal Position position;
 non terminal TypeDefinition typeDef;
-non terminal UnaryExpression unaryExpr;
-non terminal VariableExpression variable;
-non terminal WhileStatement whileStat;
+non terminal Expression unaryExpr;
+//non terminal ArrayAccess variable;
+non terminal Statement whileStat;
 non terminal epsilon;
 non terminal List<VariableDefinition> variableDefList;
 non terminal List<Statement> statementList;
@@ -118,7 +118,7 @@ typeExpr ::= ARRAY:array LBRACK: lbrack  INTLIT: intlit RBRACK
             | IDENT: ident {:RESULT = new NamedTypeExpression(new Position(identleft, identright), ident);:};
 epsilon ::= {:RESULT = nil();:};
 
-namedVar ::= IDENT: ident {:RESULT = new NamedVariable(new Position(identleft, identright), ident);:};
+//namedVar ::= IDENT: ident {:RESULT = new NamedVariable(new Position(identleft, identright), ident);:};
 
 statementList ::= epsilon: epsilon {:RESULT = nil();:}| statement:head statementList: tail{:RESULT = cons(head, tail);:};
 
@@ -153,23 +153,26 @@ statement ::= ifStat:ifStat {: RESULT = ifStat;:} |
               emptyStat:emptyStat  {: RESULT = emptyStat;:}|
               assignStat:assignStat  {: RESULT = assignStat;:}|
               compoundStat:compoundStat {: RESULT = compoundStat;:};
-optionaleEles ::= epsilon: epsilon {:RESULT = epsilon;:}  | ELSE:else statement: state
-        {:
-        RESULT = state;
-        :};
 
-ifStat ::= IF: if LPAREN expr : expr RPAREN statement : state optionaleEles : optionaleEles
+ifStat ::= IF: IF LPAREN expr : expr RPAREN statement : state optionaleEles : optionaleEles
             {:
-            RESULT =  new IfStatement(new Position(ifleft, ifright), expr, state, optionaleEles);:};
+            RESULT =  new IfStatement(new Position(IFleft, IFright), expr, state, optionaleEles);:};
+optionaleEles ::= epsilon: epsilon
+                         {:RESULT = new EmptyStatement(new Position(epsilonleft, epsilonright));:}
+                        | ELSE statement: state
+                    {:
+                    RESULT = state;
+                    :};
+
 
 compoundStat ::= LCURL:lcurl statementList:statementList RCURL
         {:
         RESULT = new CompoundStatement(new Position(lcurlleft, lcurlright), statementList);
         :};
 
-whileStat ::= WHILE: while  LPAREN expr:expr RPAREN statement:state
+whileStat ::= WHILE: WHILE  LPAREN expr:expr RPAREN statement:state
         {:
-        RESULT = new WhileStatement(new Position(whileleft, whileright),expr, state);
+        RESULT = new WhileStatement(new Position(WHILEleft, WHILEright),expr, state);
         :};
 
 emptyStat ::= SEMIC:semic {:RESULT = new EmptyStatement(new Position(semicleft, semicright));:};
@@ -181,7 +184,7 @@ callStat ::= IDENT:ident LPAREN exprList:exprList RPAREN SEMIC
 
 optionaleParaDef ::= parameterDefList : parameterDefList {:RESULT = parameterDefList;:} | epsilon {:RESULT = nil();:};
 
-assignStat ::= variable:variable ASGN termPlusMinus: termPlusMinus SEMIC
+assignStat ::= arrayAccess:variable ASGN termPlusMinus: termPlusMinus SEMIC
         {:
         RESULT = new AssignStatement(new Position(variableleft, variableright), variable , termPlusMinus);
         :};
@@ -199,42 +202,51 @@ exprList ::= exprList:head COMMA:comma expr:tail
 
 arrayAccess ::= IDENT:ident optionaleDimension:optionaleDimension
         {:
-        new ArrayAccess(new Position(identleft, right),ident, optionaleDimension );
+        RESULT = optionaleDimension.stream().reduce(new NamedVariable(new Position(identleft, identright), ident), ( Variable var1,Expression  exp) ->
+       new ArrayAccess(new Position(identleft, identright),var1, exp)
+       ,(a, b) -> a);
+
+
+
 //TODO ASK how to use ArrayAccess(Position position, Variable array, Expression index)
 
         :};
 
-optionaleDimension ::= LBRACK expr:head RBRACK optionaleDimension:tail {:RESULT= cons(head, tail);:} | epsilon {: RESULT = nil(); :};
+optionaleDimension ::= LBRACK expr:head RBRACK optionaleDimension:tail
+                        {:RESULT= cons(head, tail);:}
+                         | epsilon
+                         {: RESULT = nil(); :}
+;
 
 expr ::= binaryExpr:binaryExpr
         {:
         RESULT = binaryExpr;
         :};
 
-variable ::=  arrayAccess: arrayAccess
-        {:
-        RESULT = arrayAccess;
-        :};
+//variable ::=  arrayAccess: arrayAccess
+//        {:
+//        RESULT = arrayAccess;
+//        :};
 
 binaryExpr ::= binaryExpr:lop LE:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LE, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LSE, lop, rop); :}
             | binaryExpr:lop GT:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GT, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GRT, lop, rop); :}
             | binaryExpr:lop EQ:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.EQ, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.EQU, lop, rop); :}
             | binaryExpr:lop LT:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LT, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.LST, lop, rop); :}
             | binaryExpr:lop NE:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.NE, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.NEQ, lop, rop); :}
             | binaryExpr:lop GE:op termPlusMinus:rop
-              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GE, lop, rop); :}
+              {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.GRE, lop, rop); :}
             | termPlusMinus:term
               {: RESULT = term; :};
 
 termPlusMinus ::= termPlusMinus:lop PLUS:op mulDiv:rop
-                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.PLUS, lop, rop); :}
+                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.ADD, lop, rop); :}
                | termPlusMinus:lop MINUS:op mulDiv:rop
-                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.MINUS, lop, rop); :}
+                 {: RESULT = new BinaryExpression(new Position(opleft, opright), BinaryExpression.Operator.SUB, lop, rop); :}
                | mulDiv:term
                  {: RESULT = term; :};
 
@@ -246,13 +258,13 @@ mulDiv ::= mulDiv:lop STAR:op unaryExpr:rop
           {: RESULT = term; :};
 
 unaryExpr ::= MINUS:op unaryExpr:term
-             {: RESULT = new UnaryExpression(new Position(opleft, opright), UnaryExpression.Operator.NEG, term); :}
+             {: RESULT = new UnaryExpression(new Position(opleft, opright), UnaryExpression.Operator.MINUS, term); :}
            | paren:term
              {: RESULT = term; :};
 
 paren ::= INTLIT:lit
-        {: RESULT = new IntegerLiteral(new Position(litleft, litright), lit); :}
+    {:RESULT = new IntLiteral(new Position(litleft, litright),lit);:}
        | LPAREN:lp expr:term RPAREN:rp
          {: RESULT = term; :}
-       | variable:var
-         {: RESULT = var; :};
+       | arrayAccess:arrayAccess
+       {: RESULT = new VariableExpression(new Position(arrayAccessleft, arrayAccessright), arrayAccess); :};
