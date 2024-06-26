@@ -7,7 +7,6 @@ import de.thm.mni.compilerbau.types.ArrayType;
 import de.thm.mni.compilerbau.types.PrimitiveType;
 import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.SplError;
-
 import java.util.ArrayList;
 
 public class ProcBodyCheckVisitor extends DoNothingVisitor {
@@ -43,13 +42,19 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
         procedureDefinition.body.stream().forEach(statement -> {
             statement.accept(this);
         });
+//        procedureDefinition.parameters.forEach(parameterDefinition -> {
+//            parameterDefinition.accept(this);
+//            if (!parameterDefinition.isReference && getType(lokaleTable, parameterDefinition.typeExpression) instanceof ArrayType ) {
+//                throw SplError.ParameterMustBeReference(parameterDefinition.position, parameterDefinition.name, getType(lokaleTable, parameterDefinition.typeExpression));
+//            }
+//        });
     }
 
     @Override
     public void visit(AssignStatement assignStatement) {
         Type typeOfVar  = getType(lokaleTable, assignStatement.target);
         Type typeOfExpr =  getType(lokaleTable, assignStatement.value);
-        if (typeOfExpr != typeOfExpr){
+        if (typeOfExpr != typeOfVar){
             throw SplError.IllegalAssignment(assignStatement.position, typeOfVar, typeOfExpr);
         }
     }
@@ -59,8 +64,8 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
         if (typeOfExpr != PrimitiveType.boolType){
             throw  SplError.IfConditionMustBeBoolean(ifStatement.position, typeOfExpr);
         }
-
-        //TODO HANDLE ELSE
+        ifStatement.thenPart.accept(this);
+        ifStatement.elsePart.accept(this);
     }
 
     @Override
@@ -69,8 +74,7 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
         if (typeOfExpr != PrimitiveType.boolType){
             throw SplError.WhileConditionMustBeBoolean(whileStatement.position, typeOfExpr);
         }
-
-        //TODO HANDEL WHILE in WHILE
+        whileStatement.body.accept(this);
     }
     @Override
     public void visit( CompoundStatement compoundStatement) {
@@ -78,30 +82,36 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
     }
     @Override
     public void visit( CallStatement callStatement) {
-        var entry = lokaleTable.lookup(callStatement.procedureName, SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName));
+        var entry = globalTable.lookup(callStatement.procedureName, SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName));
         if (entry instanceof ProcedureEntry procedureEntry){
-            for (int i = 0; i< procedureEntry.parameterTypes.size() -1; i++){
-                var varParamTyp = procedureEntry.parameterTypes.get(i);
-                var argument = callStatement.arguments.get(i);
-                var argumentTyp = getType(globalTable, argument);
-                if (argumentTyp != varParamTyp.type){
-                    throw SplError.ArgumentTypeMismatch(callStatement.position, callStatement.procedureName, i+1,varParamTyp.type,argumentTyp);
+            for (int i = 0; i< procedureEntry.parameterTypes.size() ; i++){
+//                System.out.println(callStatement.procedureName + "----------------" + callStatement.position.line);
+//                System.out.println( procedureEntry.parameterTypes.size() );
+//                System.out.println(procedureEntry.parameterTypes.get(i) );
+//                System.out.println("---------Call Arg---------- \n" + callStatement.arguments.get(i));
+//                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><");
+                var expectedType = procedureEntry.parameterTypes.get(i);
+                var parameter = callStatement.arguments.get(i);
+                var parameterType = getType(lokaleTable, parameter);
+                if (parameterType != expectedType.type){
+                    throw SplError.ArgumentTypeMismatch(callStatement.position, callStatement.procedureName, i+1,expectedType.type,parameterType);
                 }
-                if (varParamTyp.isReference && !(argument instanceof VariableExpression)){
+                if (expectedType.isReference && !(parameter instanceof VariableExpression)){
                     throw  SplError.ArgumentMustBeAVariable(callStatement.position, callStatement.procedureName,i+1);
                 }
             }
             //TODO HANDLE HIER EROOR
-            System.out.println("ARgu>>>>>>>>>>>>   " + callStatement.arguments.size() );
-            System.out.println("------------------" + callStatement.arguments);
-            System.out.println("------------------------------------------------------------");
-            System.out.println("proc param Siz>>>>>>>>>>>>   " + procedureEntry.parameterTypes.size() );
-            System.out.println("proc param Siz>>>>>>>>>>>>   " + procedureEntry.parameterTypes);
+//            System.out.println(">>>>>>>>>>>>>>>>>>>>> \n " + globalTable +"\n" + ">>>>>>>>>>>>>>>>>><< \n" );
+//            System.out.println("ARgu>>>>>>>>>>>>   " + callStatement.arguments.size() );
+//            System.out.println("------------------" + callStatement.arguments);
+//            System.out.println("------------------------------------------------------------");
+//            System.out.println("proc param Siz>>>>>>>>>>>>   " + procedureEntry.parameterTypes.size() );
+//            System.out.println("proc param Siz>>>>>>>>>>>>   " + procedureEntry.parameterTypes);
             if (callStatement.arguments.size() != procedureEntry.parameterTypes.size() ){
-                throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName,procedureEntry.parameterTypes.size() -1  ,callStatement.arguments.size() );
+                throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName,procedureEntry.parameterTypes.size() ,callStatement.arguments.size() );
             }
         } else {
-            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
+                throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
         }
     }
 
@@ -181,6 +191,20 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
 
         }
     }
-
+//    public Type getType(SymbolTable table, TypeExpression typeExpression) {
+//        switch (typeExpression) {
+//            case NamedTypeExpression namedTypeExpression -> {
+//                var entry = table.lookup(namedTypeExpression.name, SplError.UndefinedIdentifier(namedTypeExpression.position, namedTypeExpression.name));
+//                if (entry instanceof TypeEntry typeEntry) {
+//                    return typeEntry.type;
+//                } else {
+//                    throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
+//                }
+//            }
+//            case ArrayTypeExpression arrayTypeExpression -> {
+//                return new ArrayType(getType(table, arrayTypeExpression.baseType), arrayTypeExpression.arraySize);
+//            }
+//        }
+//    }
 
 }
