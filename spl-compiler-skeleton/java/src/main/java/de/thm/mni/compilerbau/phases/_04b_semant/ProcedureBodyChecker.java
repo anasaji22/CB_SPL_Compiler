@@ -2,11 +2,9 @@ package de.thm.mni.compilerbau.phases._04b_semant;
 
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
-import de.thm.mni.compilerbau.absyn.visitor.DoNothingVisitor;
 import de.thm.mni.compilerbau.absyn.visitor.ProcBodyCheckVisitor;
 import de.thm.mni.compilerbau.table.SymbolTable;
 import de.thm.mni.compilerbau.types.Type;
-import de.thm.mni.compilerbau.utils.NotImplemented;
 
 /**
  * This class is used to check if the currently compiled SPL program is semantically valid.
