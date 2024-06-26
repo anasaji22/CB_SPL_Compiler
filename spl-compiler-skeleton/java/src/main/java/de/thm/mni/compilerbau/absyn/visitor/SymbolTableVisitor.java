@@ -14,7 +14,6 @@ import static de.thm.mni.compilerbau.phases._04a_tablebuild.TableBuilder.printSy
 
 public class SymbolTableVisitor extends DoNothingVisitor {
 
-    private Identifier typeName;
     private SymbolTable globalTable;
     private SymbolTable lokaleTable;
     private ArrayList<ParameterType> parameterTypeList;

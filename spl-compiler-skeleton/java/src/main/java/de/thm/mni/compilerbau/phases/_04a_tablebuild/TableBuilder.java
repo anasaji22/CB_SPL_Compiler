@@ -39,7 +39,7 @@ public class TableBuilder {
         if (!(proEntry.parameterTypes.isEmpty())){
             throw SplError.MainMustNotHaveParameters();
         }
-        return symbolTableVisitor.getGlobalTable();
+        return symbolTableVisitor.getLokaleTable();
     }
 
 

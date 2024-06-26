@@ -2,6 +2,8 @@ package de.thm.mni.compilerbau.phases._04b_semant;
 
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
+import de.thm.mni.compilerbau.absyn.visitor.DoNothingVisitor;
+import de.thm.mni.compilerbau.absyn.visitor.ProcBodyCheckVisitor;
 import de.thm.mni.compilerbau.table.SymbolTable;
 import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.NotImplemented;
@@ -13,7 +15,6 @@ import de.thm.mni.compilerbau.utils.NotImplemented;
  * Calculated {@link Type}s can be stored in and read from the dataType field of the {@link Expression} and {@link Variable} classes.
  */
 public class ProcedureBodyChecker {
-
     private final CommandLineOptions options;
 
     public ProcedureBodyChecker(CommandLineOptions options) {
@@ -22,8 +23,10 @@ public class ProcedureBodyChecker {
 
     public void checkProcedures(Program program, SymbolTable globalTable) {
         //TODO (assignment 4b): Check all procedure bodies for semantic errors
-
-        throw new NotImplemented();
+        ProcBodyCheckVisitor procBodyCheckVisitor = new ProcBodyCheckVisitor(globalTable, options);
+        program.accept(procBodyCheckVisitor);
     }
+
+
 
 }
