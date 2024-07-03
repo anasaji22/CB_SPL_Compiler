@@ -65,11 +65,11 @@ public class SymbolTableVisitor extends DoNothingVisitor {
         });
         procedureDefinition.parameters.forEach(parameterDefinition -> {
             parameterDefinition.accept(this);
-//            if (!(parameterDefinition.isReference) && getType(lokaleTable, parameterDefinition.typeExpression) instanceof ArrayType ) {
-//                throw SplError.ParameterMustBeReference(parameterDefinition.position, parameterDefinition.name, getType(lokaleTable, parameterDefinition.typeExpression));
-//            }
+            if (!(parameterDefinition.isReference) && getType(lokaleTable, parameterDefinition.typeExpression) instanceof ArrayType ) {
+                throw SplError.ParameterMustBeReference(parameterDefinition.position, parameterDefinition.name, getType(lokaleTable, parameterDefinition.typeExpression));
+            }
 
-//            TODO muss das dier sethen oder in der Bodychecker und warum funktioniert es nicht an dem Beispeil?
+//            TODO muss das hier sethen oder in der Bodychecker und warum funktioniert es nicht an dem Beispeil?
 
 //            proc p(ref x: int) {
 //            }
