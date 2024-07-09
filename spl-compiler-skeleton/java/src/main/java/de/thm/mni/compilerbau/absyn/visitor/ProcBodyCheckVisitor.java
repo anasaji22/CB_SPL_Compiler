@@ -84,13 +84,16 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
     public void visit( CallStatement callStatement) {
         var entry = globalTable.lookup(callStatement.procedureName, SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName));
         if (entry instanceof ProcedureEntry procedureEntry){
+
             for (int i = 0; i< procedureEntry.parameterTypes.size() ; i++){
 //                System.out.println(callStatement.procedureName + "----------------" + callStatement.position.line);
 //                System.out.println( procedureEntry.parameterTypes.size() );
 //                System.out.println(procedureEntry.parameterTypes.get(i) );
 //                System.out.println("---------Call Arg---------- \n" + callStatement.arguments.get(i));
 //                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><");
-                var expectedType = procedureEntry.parameterTypes.get(i);
+
+                var expectedType = procedureEntry.parameterTypes.get(i) ;
+
                 var parameter = callStatement.arguments.get(i);
                 var parameterType = getType(lokaleTable, parameter);
                 if (parameterType != expectedType.type){
@@ -170,6 +173,7 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
                 var entry = table.lookup(var.name, SplError.UndefinedIdentifier(var.position, var.name));
 
                 if (entry instanceof VariableEntry variableEntry) {
+                    variable.type = variableEntry.type;
                     return variableEntry.type;
                 } else {
                     throw SplError.NotAVariable(var.position, var.name);
@@ -179,6 +183,7 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
                 var arrayEntry = getType(table, arrayAccess.array);
                 var arrayExp = getType(table, arrayAccess.index);
                 if (arrayEntry instanceof ArrayType arrayType && arrayExp == PrimitiveType.intType) {
+                    variable.type = ((ArrayType) arrayEntry).baseType;
                     return arrayType.baseType ;
                 } else if (!(arrayEntry instanceof ArrayType arrayType)) {
                     throw SplError.IndexingNonArray(arrayAccess.position, arrayEntry);

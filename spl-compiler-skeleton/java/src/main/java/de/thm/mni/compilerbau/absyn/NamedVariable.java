@@ -2,6 +2,7 @@ package de.thm.mni.compilerbau.absyn;
 
 import de.thm.mni.compilerbau.absyn.visitor.Visitor;
 import de.thm.mni.compilerbau.table.Identifier;
+import de.thm.mni.compilerbau.types.Type;
 
 /**
  * This class represents a named variable in SPL.

@@ -3,8 +3,10 @@ package de.thm.mni.compilerbau.phases._06_codegen;
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
 import de.thm.mni.compilerbau.table.SymbolTable;
+import de.thm.mni.compilerbau.types.ArrayType;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.table.*;
+import de.thm.mni.compilerbau.utils.SplError;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -148,11 +150,11 @@ public class CodeGenerator  {
                 generateCode(arg, table);
             }
 
-            output.emitInstruction("stw", new Register(registerCounter - 1), Register.STACK_POINTER, offset);
+            output.emitInstruction("stw", new Register(registerCounter - 1), Register.STACK_POINTER, offset, "store argument #" +i);
             registerCounter--;
         }
         output.emitInstruction("jal", callStatement.procedureName.toString());
-        registerCounter--;
+        registerCounter = 8;
 
     }
     public void generateCode(Expression expression, SymbolTable table) {
@@ -175,6 +177,7 @@ public class CodeGenerator  {
                     instructionASMD.get(binaryExpression.operator).execute(registerCounter - 2, registerCounter - 2, registerCounter -1);
                 }
 
+
                 registerCounter--;
             }
             case UnaryExpression unaryExpression -> {
@@ -189,16 +192,50 @@ public class CodeGenerator  {
         generateCode(assignStatement.target, table);
         generateCode(assignStatement.value, table);
         output.emitInstruction("stw", new Register(registerCounter-1), new Register(registerCounter-2), 0);
-        registerCounter++;
+        registerCounter -= 2;
     }
     public void generateCode(Variable variable, SymbolTable table) {
-
+        switch (variable){
+            case NamedVariable namedVariable ->{
+                generateCode(namedVariable,  table);
+            }
+            case ArrayAccess arrayAccess ->{
+                generateCode(arrayAccess, table);
+            }
+        }
 
     }
     public void generateCode(CompoundStatement compoundStatement, SymbolTable table) {
         compoundStatement.statements.forEach( statement -> {
             generateCode(statement, table)  ;
         });
+    }
+    public void generateCode(NamedVariable variable, SymbolTable table) {
+        VariableEntry entry = (VariableEntry) table.lookup(variable.name);
+        output.emitInstruction("add", new Register(registerCounter), Register.FRAME_POINTER, entry.offset);
+        if (entry.isReference) {
+            output.emitInstruction("ldw", new Register(registerCounter), new Register(registerCounter), 0);
+        }
+        if (isAvailableRegister()){
+            registerCounter++;
+        }
+
+    }
+
+    public void generateCode(ArrayAccess arrayAccess, SymbolTable table) {
+        var baseType = ((ArrayType) arrayAccess.array.type).baseType;
+        var sizeOfArray = ((ArrayType) arrayAccess.array.type).arraySize;
+        generateCode(arrayAccess.array, table);
+        generateCode(arrayAccess.index, table);
+        output.emitInstruction("add", new Register(registerCounter), new Register(0), sizeOfArray);
+        if(isAvailableRegister()){
+            countOfLabels++;
+        }
+        output.emitInstruction("bgeu", new Register(registerCounter-1), new Register(registerCounter), "_indexError");
+        output.emitInstruction("mul", new Register(registerCounter - 1), new Register(registerCounter - 1), baseType.byteSize);
+        countOfLabels--;
+        output.emitInstruction("add", new Register(registerCounter - 2), new Register(registerCounter - 2), new Register(registerCounter - 1));
+        registerCounter--;
     }
 
     public void generateCode(IfStatement ifStatement ,SymbolTable table) {
@@ -214,6 +251,7 @@ public class CodeGenerator  {
         registerCounter -= 2;
         generateCode(ifStatement.thenPart, table);
         output.emitInstruction("j", endLabel);
+        registerCounter = 8;
         output.emitLabel(elseLabel);
         generateCode(ifStatement.elsePart, table);
         output.emitLabel(endLabel);
@@ -241,7 +279,7 @@ public class CodeGenerator  {
         if (24 > registerCounter){
             return true;
         }else{
-            return false;
+            throw SplError.RegisterOverflow();
         }
     }
 
