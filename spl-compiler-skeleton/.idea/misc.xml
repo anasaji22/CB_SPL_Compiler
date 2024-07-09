@@ -6,11 +6,11 @@
       <set>
         <MavenCompilerTask>
           <option name="goal" value="compile" />
-          <option name="projectPath" value="$PROJECT_DIR$/spl-compiler-skeleton/java/pom.xml" />
+          <option name="projectPath" value="$PROJECT_DIR$/java/pom.xml" />
         </MavenCompilerTask>
         <MavenCompilerTask>
           <option name="goal" value="compile" />
-          <option name="projectPath" value="$PROJECT_DIR$/spl-compiler-skeleton/kotlin/pom.xml" />
+          <option name="projectPath" value="$PROJECT_DIR$/kotlin/pom.xml" />
         </MavenCompilerTask>
       </set>
     </option>
@@ -18,18 +18,15 @@
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
-        <option value="$PROJECT_DIR$/spl-compiler-skeleton/java/pom.xml" />
-        <option value="$PROJECT_DIR$/spl-compiler-skeleton/kotlin/pom.xml" />
+        <option value="$PROJECT_DIR$/java/pom.xml" />
+        <option value="$PROJECT_DIR$/kotlin/pom.xml" />
       </list>
     </option>
   </component>
   <component name="PDMPlugin">
     <option name="skipTestSources" value="false" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_22" default="true" project-jdk-name="openjdk-21" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="openjdk-21" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
-  </component>
-  <component name="SuppressKotlinCodeStyleNotification">
-    <option name="disableForAll" value="true" />
   </component>
 </project>

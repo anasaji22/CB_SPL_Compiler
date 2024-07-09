@@ -2,11 +2,14 @@ package de.thm.mni.compilerbau.phases._05_varalloc;
 
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
+import de.thm.mni.compilerbau.phases._04a_tablebuild.TableBuilder;
 import de.thm.mni.compilerbau.table.ParameterType;
 import de.thm.mni.compilerbau.table.ProcedureEntry;
 import de.thm.mni.compilerbau.table.SymbolTable;
 import de.thm.mni.compilerbau.table.VariableEntry;
 import de.thm.mni.compilerbau.utils.*;
+import de.thm.mni.compilerbau.absyn.visitor.VarAllocatorVisitor;
+
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -30,12 +33,21 @@ public class VarAllocator {
 
     public void allocVars(Program program, SymbolTable table) {
         //TODO (assignment 5): Allocate stack slots for all parameters and local variables
-
-        throw new NotImplemented();
-
+       VarAllocatorVisitor varAllocatorVisitor = new VarAllocatorVisitor(program,table,REFERENCE_BYTESIZE);
+       varAllocatorVisitor.visit(program);
+//       program.definitions.forEach(def ->{
+//           if(def instanceof ProcedureDefinition){
+//               ProcedureEntry procEntry =(ProcedureEntry) table.lookup(def.name);
+//               System.out.println(">>>>>>>> procedureEntry.stackLayout.argumentAreaSize>>>>>>" +  procEntry.stackLayout.argumentAreaSize);
+//               System.out.println(">>>>>>>> procedureEntry.stackLayout.localVarAreaSize>>>>>>" +  procEntry.stackLayout.localVarAreaSize);
+//               System.out.println(">>>>>>>> procedureEntry.stackLayout.outgoingAreaSize>>>>>>" +  procEntry.stackLayout.outgoingAreaSize);
+//           }
+//
+//       });
         //TODO: Uncomment this when the above exception is removed!
-        //if (showVarAlloc) formatVars(program, table);
+         formatVars(program, table);
     }
+
 
     /**
      * Formats and prints the variable allocation to a human-readable format
