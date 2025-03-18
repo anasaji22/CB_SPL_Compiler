@@ -231,6 +231,7 @@ public class CodeGenerator  {
         if(isAvailableRegister()){
             countOfLabels++;
         }
+
         output.emitInstruction("bgeu", new Register(registerCounter-1), new Register(registerCounter), "_indexError");
         output.emitInstruction("mul", new Register(registerCounter - 1), new Register(registerCounter - 1), baseType.byteSize);
         countOfLabels--;

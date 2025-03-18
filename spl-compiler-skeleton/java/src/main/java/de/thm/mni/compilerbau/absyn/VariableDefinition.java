@@ -12,6 +12,8 @@ import de.thm.mni.compilerbau.table.Identifier;
  */
 public class VariableDefinition extends Node {
     public final Identifier name;
+    public boolean isConst;
+    public IntLiteral init;
     public final TypeExpression typeExpression;
 
     /**

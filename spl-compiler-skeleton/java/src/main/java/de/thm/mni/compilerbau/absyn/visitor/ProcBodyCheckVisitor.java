@@ -84,8 +84,8 @@ public class ProcBodyCheckVisitor extends DoNothingVisitor {
     public void visit( CallStatement callStatement) {
         var entry = globalTable.lookup(callStatement.procedureName, SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName));
         if (entry instanceof ProcedureEntry procedureEntry){
-
-            for (int i = 0; i< procedureEntry.parameterTypes.size() ; i++){
+            //TODO if( procedureEntry.parameterTypes.size())
+            for (int i = 0; i< procedureEntry.parameterTypes.size() && i < callStatement.arguments.size(); i++){
 //                System.out.println(callStatement.procedureName + "----------------" + callStatement.position.line);
 //                System.out.println( procedureEntry.parameterTypes.size() );
 //                System.out.println(procedureEntry.parameterTypes.get(i) );
